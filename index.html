@@ -214,6 +214,9 @@
         <div class="d-grid gap-2 hidden" id="share-result-container">
             <button type="button" class="btn btn-game" id="downloadResultBtn">Download Result (PNG)</button>
             <button type="button" class="btn btn-game" id="shareResultBtn">Share Result on X (Twitter)</button>
+            <a href="https://github.com" class="btn btn-game" id="aboutBtn" target="_blank" rel="noopener noreferrer">
+              About this game on GitHub
+            </a>
         </div>
       </div>
       <div class="modal-footer">
@@ -610,6 +613,7 @@
       const originalGameStatusText = gameStatus.textContent;
       const downloadButton = document.getElementById('downloadResultBtn');
       const shareButton = document.getElementById('shareResultBtn');
+      const aboutButton = document.getElementById('aboutBtn');
       const originalDownloadDisplay = downloadButton.style.display;
       const originalShareDisplay = shareButton.style.display;
 
@@ -631,6 +635,7 @@
           gameStatus.textContent = originalGameStatusText;
           downloadButton.style.display = originalDownloadDisplay; // Restore download button
           shareButton.style.display = originalShareDisplay; // Restore share button
+          aboutButton.style.display = originalAboutDisplay; // Restore about button
 
           // Create a temporary link element
           const link = document.createElement('a');
