@@ -549,7 +549,7 @@
       shareResultContainer.classList.remove('hidden'); // Show share and download buttons
 
       finalSurvivalTimeSeconds = Math.floor((Date.now() - gameStartTime) / 1000); // Store final time
-      gameStatus.textContent = `GAME OVER! I survived for ${finalSurvivalTimeSeconds} seconds.`;
+      gameStatus.textContent = `GAME OVER! I survived for ${finalSurvivalTimeSeconds} seconds.<br><a href="https://github.com/dobzinski/kubernetes-survivor/">About on GitHub</a>`;
     }
   }
 
