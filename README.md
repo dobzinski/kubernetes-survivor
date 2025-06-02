@@ -8,3 +8,5 @@ https://dobzinski.github.io/kubernetes-survivor/
 
 Thanks for playing!
 :-)
+
+![Welcome](image.png)
