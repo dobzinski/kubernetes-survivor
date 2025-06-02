@@ -427,7 +427,7 @@
   const BASE_INCREASE_RATE = 0.5; // Base value for increase per tick (changed from 1)
   const INCREASE_INTERVAL_MS = 1000; // Base interval for progress bar increase (1 second)
   const LEVEL_UP_INTERVAL_MS = 20000; // Interval to level up (20 seconds - doubled)
-  const BUTTON_COOLDOWN_MS = 3000; // Button cooldown (3 seconds)
+  const BUTTON_COOLDOWN_MS = 2000; // Button cooldown (2 seconds)
 
   // Function to update progress bars
   function updateProgressBar(barElement, value) {
@@ -499,16 +499,26 @@
 
   // Function to increase progress bars
   function increaseProgressBars() {
-    const currentIncreaseRate = BASE_INCREASE_RATE * gameLevel; // Rate increases with level
+    //const currentIncreaseRate = BASE_INCREASE_RATE * gameLevel; // Rate increases with level
+    // Random
+    const scalingRandomIncreaseRate = Math.random() * (0.8 - 0.3) + 0.3;
+    const defendRandomIncreaseRate = Math.random() * (0.8 - 0.3) + 0.3;
+    const monitoringRandomIncreaseRate = Math.random() * (0.8 - 0.3) + 0.3;
+    const scalingCurrentIncrease = scalingRandomIncreaseRate * gameLevel;
+    const defendCurrentIncrease = defendRandomIncreaseRate * gameLevel;
+    const monitoringCurrentIncrease = monitoringRandomIncreaseRate * gameLevel;
 
-    scalingValue += currentIncreaseRate;
-    defendValue += currentIncreaseRate;
-    monitoringValue += currentIncreaseRate;
+    //scalingValue += currentIncreaseRate;
+    scalingValue = Math.min(100, scalingValue + scalingCurrentIncrease); // Random
+    //defendValue += currentIncreaseRate;
+    defendValue = Math.min(100, defendValue + defendCurrentIncrease); // Random
+    //monitoringValue += currentIncreaseRate;
+    monitoringValue = Math.min(100, monitoringValue + monitoringCurrentIncrease); // Random
 
     // Ensure values don't go above 100
-    scalingValue = Math.min(100, scalingValue);
-    defendValue = Math.min(100, defendValue);
-    monitoringValue = Math.min(100, monitoringValue);
+    //scalingValue = Math.min(100, scalingValue);
+    //defendValue = Math.min(100, defendValue);
+    //monitoringValue = Math.min(100, monitoringValue);
 
     updateProgressBar(scalingProgressBar, scalingValue);
     updateProgressBar(defendProgressBar, defendValue);
@@ -561,21 +571,24 @@
 
   // Add listeners for buttons
   scalingBtn.addEventListener('click', () => {
-    scalingValue = Math.max(0, scalingValue - 15); // Decrease by 15%
+    //scalingValue = Math.max(0, scalingValue - 15); // Decrease by 15%
+    scalingValue = Math.max(0, scalingValue - (Math.floor(Math.random() * 6) + 13)); // Random
     updateProgressBar(scalingProgressBar, scalingValue);
     disableAllButtons();
     setTimeout(enableAllButtons, BUTTON_COOLDOWN_MS);
   });
 
   defendBtn.addEventListener('click', () => {
-    defendValue = Math.max(0, defendValue - 15); // Decrease by 15%
+    //defendValue = Math.max(0, defendValue - 15); // Decrease by 15%
+    defendValue = Math.max(0, defendValue - (Math.floor(Math.random() * 6) + 13)); // Random
     updateProgressBar(defendProgressBar, defendValue);
     disableAllButtons();
     setTimeout(enableAllButtons, BUTTON_COOLDOWN_MS);
   });
 
   monitoringBtn.addEventListener('click', () => {
-    monitoringValue = Math.max(0, monitoringValue - 15); // Decrease by 15%
+    //monitoringValue = Math.max(0, monitoringValue - 15); // Decrease by 15%
+    monitoringValue = Math.max(0, monitoringValue - (Math.floor(Math.random() * 6) + 13)); // Random
     updateProgressBar(monitoringProgressBar, monitoringValue);
     disableAllButtons();
     setTimeout(enableAllButtons, BUTTON_COOLDOWN_MS);
