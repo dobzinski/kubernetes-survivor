@@ -151,12 +151,11 @@
     background-color: #4a505b; /* Disabled button color */
     cursor: not-allowed;
   }
-  
-  .btn-about {
-    background-color: #d19a66 !important;
-    color: #000 !important;
+
+  .btn-share {
+    background-color: #c678dd !important;
   }
-  
+
   #level-display {
     font-size: 1.2em;
     font-weight: bold;
@@ -218,10 +217,7 @@
 
         <div class="d-grid gap-2 hidden" id="share-result-container">
             <button type="button" class="btn btn-game" id="downloadResultBtn">Download Result (PNG)</button>
-            <button type="button" class="btn btn-game" id="shareResultBtn">Share Result on X (Twitter)</button>
-            <a href="https://github.com/dobzinski/kubernetes-survivor/" class="btn btn-game btn-about" id="aboutBtn" target="_blank" rel="noopener noreferrer">
-              About this game on GitHub
-            </a>
+            <button type="button" class="btn btn-game btn-share" id="shareResultBtn">Share Result on X (Twitter)</button>
         </div>
       </div>
       <div class="modal-footer">
@@ -237,7 +233,7 @@
   // =====================================================================
   // Global Configuration Variables
   // =====================================================================
-  const SHARE_TWEET_BASE_TEXT = "I survived {LEVEL} levels in Kubernetes Survivor! Can you beat my score?\nhttps://dobzinski.github.io/kubernetes-survivor/\n#KubernetesSurvivor";
+  const SHARE_TWEET_BASE_TEXT = "I survived {LEVEL} levels in Kubernetes Survivor! Can you beat my score?\n#KubernetesSurvivor";
 
   // =====================================================================
   // Animated Terminal Logic
@@ -618,7 +614,6 @@
       const originalGameStatusText = gameStatus.textContent;
       const downloadButton = document.getElementById('downloadResultBtn');
       const shareButton = document.getElementById('shareResultBtn');
-      const aboutButton = document.getElementById('aboutBtn');
       const originalDownloadDisplay = downloadButton.style.display;
       const originalShareDisplay = shareButton.style.display;
 
@@ -627,7 +622,6 @@
       gameStatus.textContent = `GAME OVER! I survived for ${finalSurvivalTimeSeconds} seconds.`; // Footer as requested
       downloadButton.style.display = 'none'; // Hide download button
       shareButton.style.display = 'none'; // Hide share button
-      aboutButton.style.display = 'none'; // hide about button
 
       // Capture the modal content (the inner part of the modal)
       const modalContent = gameModalElement.querySelector('.modal-content');
@@ -641,7 +635,6 @@
           gameStatus.textContent = originalGameStatusText;
           downloadButton.style.display = originalDownloadDisplay; // Restore download button
           shareButton.style.display = originalShareDisplay; // Restore share button
-          aboutButton.style.display = originalAboutDisplay; // Restore about button
 
           // Create a temporary link element
           const link = document.createElement('a');
@@ -658,7 +651,6 @@
           gameStatus.textContent = originalGameStatusText;
           downloadButton.style.display = originalDownloadDisplay; // Restore download button
           shareButton.style.display = originalShareDisplay; // Restore share button
-          aboutButton.style.display = originalAboutDisplay; // Restore about button
       });
   });
 
