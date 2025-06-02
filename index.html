@@ -592,14 +592,19 @@
 
   // Download Result (PNG)
   downloadResultBtn.addEventListener('click', () => {
-      // Temporarily store original texts
+      // Temporarily store original texts and visibility
       const originalTitleText = document.getElementById('gameModalLabel').textContent;
       const originalGameStatusText = gameStatus.textContent;
+      const downloadButton = document.getElementById('downloadResultBtn');
+      const shareButton = document.getElementById('shareResultBtn');
+      const originalDownloadDisplay = downloadButton.style.display;
+      const originalShareDisplay = shareButton.style.display;
 
-      // Change texts for screenshot
+      // Change texts and hide buttons for screenshot
       document.getElementById('gameModalLabel').textContent = 'Kubernetes Survivor'; // Title as requested
-      // Use the stored finalSurvivalTimeSeconds for the screenshot text
-      gameStatus.textContent = `GAME OVER! I survived for ${finalSurvivalTimeSeconds} seconds.`; // Footer as requested
+      gameStatus.textContent = `GAME OVER! You survived ${finalSurvivalTimeSeconds} seconds. One or more metrics reached 100%.`; // Footer as requested
+      downloadButton.style.display = 'none'; // Hide download button
+      shareButton.style.display = 'none'; // Hide share button
 
       // Capture the modal content (the inner part of the modal)
       const modalContent = gameModalElement.querySelector('.modal-content');
@@ -608,9 +613,11 @@
           scale: 2, // Increase scale for better resolution
           useCORS: true // Important if any images/resources are from external domains
       }).then(canvas => {
-          // Revert texts immediately after capture
+          // Revert texts and button visibility immediately after capture
           document.getElementById('gameModalLabel').textContent = originalTitleText;
           gameStatus.textContent = originalGameStatusText;
+          downloadButton.style.display = originalDownloadDisplay; // Restore download button
+          shareButton.style.display = originalShareDisplay; // Restore share button
 
           // Create a temporary link element
           const link = document.createElement('a');
@@ -622,9 +629,11 @@
       }).catch(err => {
           console.error("Error capturing modal for download:", err);
           gameStatus.textContent = "Error capturing result for download.";
-          // Ensure texts are reverted even on error
+          // Ensure texts and button visibility are reverted even on error
           document.getElementById('gameModalLabel').textContent = originalTitleText;
           gameStatus.textContent = originalGameStatusText;
+          downloadButton.style.display = originalDownloadDisplay; // Restore download button
+          shareButton.style.display = originalShareDisplay; // Restore share button
       });
   });
 
