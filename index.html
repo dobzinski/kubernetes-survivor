@@ -214,7 +214,7 @@
         <div class="d-grid gap-2 hidden" id="share-result-container">
             <button type="button" class="btn btn-game" id="downloadResultBtn">Download Result (PNG)</button>
             <button type="button" class="btn btn-game" id="shareResultBtn">Share Result on X (Twitter)</button>
-            <a href="https://github.com" class="btn btn-game" id="aboutBtn" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/dobzinski/kubernetes-survivor/" class="btn btn-game" id="aboutBtn" target="_blank" rel="noopener noreferrer">
               About this game on GitHub
             </a>
         </div>
@@ -552,7 +552,7 @@
       shareResultContainer.classList.remove('hidden'); // Show share and download buttons
 
       finalSurvivalTimeSeconds = Math.floor((Date.now() - gameStartTime) / 1000); // Store final time
-      gameStatus.textContent = `GAME OVER! I survived for ${finalSurvivalTimeSeconds} seconds.<br><a href="https://github.com/dobzinski/kubernetes-survivor/">About on GitHub</a>`;
+      gameStatus.textContent = `GAME OVER! I survived for ${finalSurvivalTimeSeconds} seconds.`;
     }
   }
 
