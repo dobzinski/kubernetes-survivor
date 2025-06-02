@@ -1,5 +1,666 @@
+<!DOCTYPE html>
 <html>
-  <body>
-    <h1>Kubernetes Survivor!</h1>
-  </body>
+<head>
+<title>Kubernetes Survivor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  body {
+    font-family: monospace;
+    background-color: #000;
+    color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Hides body scrollbar */
+    height: 100vh; /* Ensures body takes full viewport height */
+  }
+
+  /* Terminal Styles (Background) */
+  .terminal {
+    position: fixed; /* Fixes terminal to the screen */
+    top: 0;
+    left: 0;
+    width: 100%; /* Takes full width */
+    height: 100vh; /* Takes full height */
+    padding: 20px;
+    background-color: #1e1e1e;
+    overflow-y: auto; /* Adds scrollbar as needed */
+    box-sizing: border-box; /* Ensures padding doesn't affect total width/height */
+    z-index: -1; /* Puts terminal behind other elements */
+  }
+
+  .line {
+    white-space: pre-wrap; /* Preserves formatting and line breaks */
+  }
+
+  .prompt {
+    color: #56b6c2; /* Light blue for prompt */
+    display: inline-block; /* Allows command to continue on same line */
+    margin-right: 5px; /* Space between prompt and command */
+  }
+
+  .output {
+    color: #98c379; /* Light green for output */
+    display: block; /* Ensures output starts on a new line */
+  }
+
+  #current-typing-line {
+    display: block; /* Ensures typing line takes full width */
+  }
+
+  #typed-command {
+    display: inline-block; /* Allows cursor to be next to text */
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 1em;
+    background-color: #f0f0f0;
+    animation: blink 1s infinite step-end;
+  }
+
+  /* Class to stop cursor blinking */
+  .cursor-stopped {
+    animation: none;
+    opacity: 1; /* Ensures cursor is visible if animation stops in opaque state */
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* Game Styles */
+  #get-ready-animation {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 250px; /* Changed from 200px to 250px */
+    font-size: 2em; /* Slightly smaller */
+    font-weight: bold;
+    color: #e6c07b; /* Yellow/gold color */
+    text-shadow: 0 0 10px rgba(230, 192, 123, 0.7);
+    opacity: 0; /* Starts invisible */
+    transition: opacity 1s ease-in-out; /* Smooth fade transition */
+    z-index: 1000; /* Above terminal */
+    text-align: left; /* Align text to the left */
+    /* No border for the box */
+  }
+
+  #loading-dots {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    width: 0; /* Starts hidden */
+    animation: dots-animation 1.5s steps(4, end) infinite; /* Animation for dots */
+  }
+
+  @keyframes dots-animation {
+    0% { width: 0; }
+    25% { width: 0.5em; /* . */ }
+    50% { width: 1em; /* .. */ }
+    75% { width: 1.5em; /* ... */ }
+    100% { width: 1.5em; }
+  }
+
+  #gameModal .modal-content {
+    background-color: #282c34; /* Dark background for modal */
+    color: #f0f0f0;
+    border: 1px solid #61afef; /* Light blue border */
+    box-shadow: 0 0 20px rgba(97, 175, 239, 0.5);
+    /* Ensure background is explicitly set for html2canvas */
+    background: #282c34;
+  }
+
+  #gameModal .modal-header,
+  #gameModal .modal-footer {
+    border-bottom: 1px solid #3e4451;
+    border-top: 1px solid #3e4451;
+  }
+
+  #gameModal .modal-title {
+    color: #61afef;
+  }
+
+  .progress {
+    height: 25px; /* Progress bar height */
+    margin-bottom: 15px;
+    background-color: #3e4451; /* Progress bar background */
+  }
+
+  .progress-bar {
+    background-color: #98c379; /* Progress bar color (green) */
+    transition: width 0.3s ease-out; /* Smooth width transition */
+  }
+
+  .btn-game {
+    background-color: #61afef; /* Blue button */
+    color: #fff;
+    border: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-game:hover:not(:disabled) {
+    background-color: #56b6c2;
+  }
+
+  .btn-game:disabled {
+    background-color: #4a505b; /* Disabled button color */
+    cursor: not-allowed;
+  }
+
+  #level-display {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #e06c75; /* Red color for level */
+    margin-bottom: 15px;
+  }
+
+  /* Utility class to hide elements */
+  .hidden {
+    display: none !important;
+  }
+
+  /* Centering for game-status */
+  #gameModal .modal-footer #game-status {
+    width: 100%; /* Ensure it takes full width to center text */
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="terminal" id="terminal">
+  <div id="terminal-output"></div>
+</div>
+
+<div id="get-ready-animation">
+  <span>Get Ready</span><span id="loading-dots">...</span>
+</div>
+
+<div class="modal fade" id="gameModal" tabindex="-1" aria-labelledby="gameModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="gameModalLabel">Kubernetes Survivor</h5>
+      </div>
+      <div class="modal-body">
+        <div id="level-display" class="text-center">Level: 1</div>
+
+        <label for="scalingProgressBar">Scaling more resources:</label>
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" id="scalingProgressBar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <label for="defendProgressBar">Defending against attacks:</label>
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" id="defendProgressBar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <label for="monitoringProgressBar">Monitoring alerts:</label>
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" id="monitoringProgressBar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <div class="d-grid gap-2" id="action-buttons-container">
+          <button type="button" class="btn btn-game" id="scalingBtn">Scale</button>
+          <button type="button" class="btn btn-game" id="defendBtn">Defend</button>
+          <button type="button" class="btn btn-game" id="monitoringBtn">Monitor</button>
+        </div>
+
+        <div class="d-grid gap-2 hidden" id="share-result-container">
+            <button type="button" class="btn btn-game" id="downloadResultBtn">Download Result (PNG)</button>
+            <button type="button" class="btn btn-game" id="shareResultBtn">Share Result on X</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span id="game-status"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // =====================================================================
+  // Global Configuration Variables
+  // =====================================================================
+  const SHARE_TWEET_BASE_TEXT = "I survived {LEVEL} levels in Kubernetes Survivor! Can you beat my score?\n#KubernetesSurvivor #SUSE";
+
+  // =====================================================================
+  // Animated Terminal Logic
+  // =====================================================================
+  const terminal = document.getElementById('terminal');
+  const terminalOutput = document.getElementById('terminal-output');
+  let typedCommand; // Will be defined when typing line is created
+  let currentCursor; // Reference to the current cursor
+
+  const commandsAndOutputs = [
+    { command: 'kubectl get pods', outputs: [
+        `NAME                     READY   STATUS    RESTARTS   AGE\nmy-app-789d96c597-abcde   1/1     Running   0          2m\nnginx-deployment-66b6c48d5-fghij   1/1     Running   0          5m`,
+        `No resources found in default namespace.`,
+        `NAME                     READY   STATUS    RESTARTS   AGE\nbackend-service-xyz-123   1/1     Running   0          1h\nfrontend-app-abc-456      0/1     Pending   0          10s\nmonitoring-tool-789-abc   1/1     Running   0          30m`
+    ]},
+    { command: 'kubectl get deployments', outputs: [
+        `NAME               READY   UP-TO-DATE   AVAILABLE   AGE\nmy-app             1/1     1            1           2m\nnginx-deployment   1/1     1            1           5m`,
+        `deployment.apps "my-app" not found`,
+        `NAME               READY   UP-TO-DATE   AVAILABLE   AGE\napi-gateway        1/1     1            1           10m\ndatabase-proxy     1/1     1            1           15m`
+    ]},
+    { command: 'kubectl get services', outputs: [
+        `NAME         TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)         AGE\nkubernetes   ClusterIP   10.96.0.1     <none>        443/TCP         25h\nmy-service   LoadBalancer   10.96.10.100   <pending>     80:30000/TCP    2m`,
+        `No services found.`,
+        `NAME         TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)         AGE\nauth-service   ClusterIP   10.96.0.10    <none>        8080/TCP        1h\nweb-app        NodePort    10.96.0.20    <none>        80:31000/TCP    30m`
+    ]},
+    { command: 'kubectl create deployment my-new-app --image=nginx', outputs: [`deployment.apps/my-new-app created`, `Error: failed to create deployment: already exists`] },
+    { command: 'kubectl expose deployment my-new-app --port=80 --type=LoadBalancer', outputs: [`service/my-new-app exposed`, `Error: service already exists`] },
+    { command: 'kubectl get replicasets', outputs: [
+        `NAME   DESIRED   CURRENT   READY   AGE\nmy-app-789d96c597         1         1         1       2m\nnginx-deployment-66b6c48d5   1         1         1       5m`,
+        `No replicasets found.`
+    ]},
+    { command: 'kubectl kubectl scale deployment my-app --replicas=3', outputs: [`deployment.apps/my-app scaled`, `Error: deployment not found`] },
+    { command: 'kubectl get events', outputs: [
+        `TYPE    REASON              OBJECT                                 MESSAGE\nNormal  ScalingReplicaSet   replicaset.apps/my-app-789d96c597    Scaled up replica set my-app-789d96c597 to 1`,
+        `Normal  SuccessfulCreate    pod/my-app-789d96c597-abcde           Created container my-app`
+    ]},
+    { command: 'kubectl apply -f my-config.yaml', outputs: [`configmap/my-config created`, `configmap/my-config configured`] },
+    { command: 'kubectl describe pod my-app-789d96c597-abcde', outputs: [
+        `Name:         my-app-789d96c597-abcde\nNamespace:    default\n... (more details about the pod)`,
+        `Error from server (NotFound): pods "my-app-789d96c597-abcde" not found`
+    ]},
+    { command: 'kubectl logs my-app-789d96c597-abcde', outputs: [
+        `[INFO] Server started on port 8080`,
+        `[WARN] Database connection lost. Retrying...`,
+        `Error from server (NotFound): pods "my-app-789d96c597-abcde" not found`
+    ]},
+    { command: 'kubectl exec -it my-app-789d96c597-abcde -- /bin/bash', outputs: [`(interactive shell started inside the pod)`, `Error: container not found`] },
+    { command: 'kubectl delete deployment my-new-app', outputs: [`deployment.apps/my-new-app deleted`, `Error: deployment not found`] },
+    { command: 'kubectl delete service my-new-app', outputs: [`service/my-new-app deleted`, `Error: service not found`] },
+    { command: 'kubectl get nodes', outputs: [
+        `NAME   STATUS   ROLES   AGE   VERSION\nmy-node-1   Ready   master   26h   v1.24.0\nmy-worker-1   Ready   <none>   25h   v1.24.0`,
+        `No nodes found.`,
+        `NAME   STATUS   ROLES   AGE   VERSION\ncontrol-plane  Ready   master   3d   v1.25.0\nworker-node-1  Ready   <none>   3d   v1.25.0\nworker-node-2  Ready   <none>   3d   v1.25.0`
+    ]},
+    { command: 'kubectl cluster-info', outputs: [
+        `Kubernetes control plane is running at https://192.168.64.2:8443\nCoreDNS is running at https://192.168.64.2:8443/api/v1/namespaces/kube-system/services/kube-dns:dns-01/proxy`,
+        `Kubernetes control plane is running at https://10.0.0.1:6443`
+    ]},
+    { command: 'kubectl api-resources', outputs: [
+        `NAME   SHORTNAMES   APIVERSION   NAMESPACED   KIND\npods   po   v1   true   Pod\ndeployments   deploy   apps/v1   true   Deployment\n... (more API resources)`,
+        `NAME   SHORTNAMES   APIVERSION   NAMESPACED   KIND\nconfigmaps   cm   v1   true   ConfigMap\nsecrets   secret   v1   true   Secret`
+    ]},
+    { command: 'kubectl config view', outputs: [
+        `apiVersion: v1\nclusters:\n- cluster:\n    server: https://192.168.64.2:8443\n  name: default`,
+        `apiVersion: v1\nclusters:\n- cluster:\n    server: https://10.0.0.1:6443\n  name: prod-cluster`
+    ]},
+    { command: 'kubectl top nodes', outputs: [
+        `NAME   CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%\nmy-node-1   120m   6%   1Gi   40%\nmy-worker-1 80m   4%   700Mi   30%`,
+        `Error from server (NotFound): metrics not available for nodes`
+    ]},
+    { command: 'kubectl version', outputs: [
+        `Client Version: version.Info{Major:"1", Minor:"24", GitVersion:"v1.24.0", GitCommit:"...", GitTreeState:"clean", BuildDate:"...", GoVersion:"go1.19.1", Compiler:"gc", Platform:"linux/amd64"}\nServer Version: version.Info{Major:"1", Minor:"24", GitVersion:"v1.24.0", GitCommit:"...", GitTreeState:"clean", BuildDate:"...", GoVersion:"go1.19.1", Compiler:"gc", Platform:"linux/amd64"}`,
+        `Client Version: v1.25.0\nServer Version: v1.25.0`
+    ]},
+  ];
+
+  let terminalCommandIndex = 0;
+  let terminalCharIndex = 0;
+  let terminalTypingSpeed = 50; // milliseconds per character
+  let terminalDelayBetweenCommands = 1500; // milliseconds
+
+  // Function to add a new prompt line and typing area
+  function createTypingLine() {
+    const newLine = document.createElement('div');
+    newLine.classList.add('line');
+    newLine.id = 'current-typing-line'; // ID for easy reference
+    newLine.innerHTML = `<span class="prompt">kubernetes: ~</span> <span id="typed-command"></span><span class="cursor"></span>`;
+    terminalOutput.appendChild(newLine);
+    typedCommand = newLine.querySelector('#typed-command'); // Update global reference for command span
+    currentCursor = newLine.querySelector('.cursor'); // Update global reference for cursor
+    if (currentCursor) {
+        currentCursor.classList.remove('cursor-stopped'); // Ensure the new cursor blinks
+    }
+    scrollToBottom();
+  }
+
+  function typeTerminalCommand() {
+    if (terminalCommandIndex < commandsAndOutputs.length) {
+      const currentCommand = commandsAndOutputs[terminalCommandIndex].command;
+
+      // If there's no valid typedCommand element or if it was removed, create a new one
+      if (!typedCommand || !terminalOutput.contains(typedCommand)) {
+          createTypingLine();
+      }
+
+      if (terminalCharIndex < currentCommand.length) {
+        typedCommand.textContent = currentCommand.substring(0, terminalCharIndex + 1);
+        terminalCharIndex++;
+        setTimeout(typeTerminalCommand, terminalTypingSpeed);
+      } else {
+        // Command typed, now simulate Enter and show output
+        setTimeout(() => {
+          // Stop the cursor from blinking on the current line
+          if (currentCursor) {
+              currentCursor.classList.add('cursor-stopped');
+          }
+
+          // Add the complete command line (with prompt and typed command) to the output
+          const commandLine = document.createElement('div');
+          commandLine.classList.add('line');
+          commandLine.innerHTML = `<span class="prompt">kubernetes: ~</span> ${typedCommand.textContent}`;
+          terminalOutput.appendChild(commandLine);
+          scrollToBottom();
+
+          // Select a random output
+          const randomOutputIndex = Math.floor(Math.random() * commandsAndOutputs[terminalCommandIndex].outputs.length);
+          const selectedOutput = commandsAndOutputs[terminalCommandIndex].outputs[randomOutputIndex];
+
+          // Add the output line
+          const outputLine = document.createElement('div');
+          outputLine.classList.add('line', 'output');
+          outputLine.textContent = selectedOutput;
+          terminalOutput.appendChild(outputLine);
+          scrollToBottom();
+
+          // Prepare for the next command
+          terminalCharIndex = 0;
+          terminalCommandIndex++;
+
+          // Remove the old typing line (which is now empty or has the complete command)
+          const oldTypingLineElement = document.getElementById('current-typing-line');
+          if (oldTypingLineElement) {
+              oldTypingLineElement.remove();
+          }
+
+          // Create a new typing line for the next command
+          createTypingLine();
+
+          setTimeout(typeTerminalCommand, terminalDelayBetweenCommands);
+        }, 500);
+      }
+    } else {
+      // Loop back to the beginning if all commands have been executed
+      terminalCommandIndex = 0;
+      // Ensure the cursor on the last line stops blinking before restarting
+      if (currentCursor) {
+          currentCursor.classList.add('cursor-stopped');
+      }
+      // Start the next command cycle after a small delay
+      setTimeout(typeTerminalCommand, terminalDelayBetweenCommands);
+    }
+  }
+
+  function scrollToBottom() {
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  // =====================================================================
+  // Kubernetes Survivor Game Logic
+  // =====================================================================
+
+  const getReadyAnimation = document.getElementById('get-ready-animation');
+  const gameModalElement = document.getElementById('gameModal');
+  const levelDisplay = document.getElementById('level-display');
+  const scalingProgressBar = document.getElementById('scalingProgressBar');
+  const defendProgressBar = document.getElementById('defendProgressBar');
+  const monitoringProgressBar = document.getElementById('monitoringProgressBar');
+  const actionButtonsContainer = document.getElementById('action-buttons-container');
+  const shareResultContainer = document.getElementById('share-result-container');
+  const downloadResultBtn = document.getElementById('downloadResultBtn');
+  const shareResultBtn = document.getElementById('shareResultBtn');
+  const gameStatus = document.getElementById('game-status');
+
+  let scalingValue = 0; // Start from 0
+  let defendValue = 0;    // Start from 0
+  let monitoringValue = 0; // Start from 0
+  let gameLevel = 1;
+  let gameStartTime; // To store the start time of the game
+  let finalSurvivalTimeSeconds = 0; // Stores the final survival time for screenshot
+  let increaseInterval; // For the progress bar increase setInterval
+  let levelUpInterval; // For the level up setInterval
+  let currentStatusSeverity = 0; // 0: OK, 1: Warning, 2: Danger
+  let baseStatusMessage = ""; // Stores the Level Up message
+
+  const BASE_INCREASE_RATE = 0.5; // Base value for increase per tick (changed from 1)
+  const INCREASE_INTERVAL_MS = 1000; // Base interval for progress bar increase (1 second)
+  const LEVEL_UP_INTERVAL_MS = 20000; // Interval to level up (20 seconds - doubled)
+  const BUTTON_COOLDOWN_MS = 3000; // Button cooldown (3 seconds)
+
+  // Function to update progress bars
+  function updateProgressBar(barElement, value) {
+    barElement.style.width = value + '%';
+    barElement.setAttribute('aria-valuenow', value);
+    barElement.textContent = Math.floor(value) + '%'; // Round down for display
+
+    // Color logic: green when low, yellow in middle, red when high
+    if (value >= 85) { // Critical level (changed from 75)
+        barElement.classList.remove('bg-success', 'bg-warning');
+        barElement.classList.add('bg-danger');
+    } else if (value >= 70) { // Warning level (changed from 50)
+        barElement.classList.remove('bg-success', 'bg-danger');
+        barElement.classList.add('bg-warning');
+    } else { // Good level
+        barElement.classList.remove('bg-warning', 'bg-danger');
+        barElement.classList.add('bg-success');
+    }
+    updateGameStatusMessage(); // Call here to update based on current state of all bars
+  }
+
+  // Function to update game status message based on overall state
+  function updateGameStatusMessage() {
+      let newSeverity = 0;
+      let newMessage = baseStatusMessage; // Start with the base message (e.g., Level Up)
+
+      // Determine the highest severity among all bars
+      if (scalingValue >= 85 || defendValue >= 85 || monitoringValue >= 85) { // Changed from 75
+          newSeverity = 2; // Danger
+          newMessage = "Danger! The cluster is overloaded.";
+      } else if (scalingValue >= 70 || defendValue >= 70 || monitoringValue >= 70) { // Changed from 50
+          newSeverity = 1; // Warning
+          newMessage = "Warning! Resources are becoming critical.";
+      }
+
+      // Logic to update the displayed message
+      if (newSeverity > currentStatusSeverity) {
+          // Always update to a higher severity
+          gameStatus.textContent = newMessage;
+          currentStatusSeverity = newSeverity;
+      } else if (newSeverity < currentStatusSeverity) {
+          // Only downgrade severity if ALL bars are below the previous higher threshold
+          let canDowngrade = true;
+          if (currentStatusSeverity === 2) { // Was Danger, check if any bar is still >= 85
+              if (scalingValue >= 85 || defendValue >= 85 || monitoringValue >= 85) {
+                  canDowngrade = false;
+              }
+          }
+          if (currentStatusSeverity === 1) { // Was Warning, check if any bar is still >= 70
+              if (scalingValue >= 70 || defendValue >= 70 || monitoringValue >= 70) {
+                  canDowngrade = false;
+              }
+          }
+
+          if (canDowngrade) {
+              gameStatus.textContent = newMessage;
+              currentStatusSeverity = newSeverity;
+          }
+      } else if (newSeverity === currentStatusSeverity) {
+          // If severity is the same, just ensure the correct message is displayed
+          gameStatus.textContent = newMessage;
+      }
+
+      // Special case: if current severity is 0 and there's a base message, display it
+      if (newSeverity === 0 && baseStatusMessage !== "") {
+          gameStatus.textContent = baseStatusMessage;
+      }
+  }
+
+  // Function to increase progress bars
+  function increaseProgressBars() {
+    const currentIncreaseRate = BASE_INCREASE_RATE * gameLevel; // Rate increases with level
+
+    scalingValue += currentIncreaseRate;
+    defendValue += currentIncreaseRate;
+    monitoringValue += currentIncreaseRate;
+
+    // Ensure values don't go above 100
+    scalingValue = Math.min(100, scalingValue);
+    defendValue = Math.min(100, defendValue);
+    monitoringValue = Math.min(100, monitoringValue);
+
+    updateProgressBar(scalingProgressBar, scalingValue);
+    updateProgressBar(defendProgressBar, defendValue);
+    updateProgressBar(monitoringProgressBar, monitoringValue);
+
+    checkGameOver();
+  }
+
+  // Function to level up
+  function levelUp() {
+    gameLevel++;
+    levelDisplay.textContent = `Level: ${gameLevel}`;
+    baseStatusMessage = `Level Up! Speed increased.`; // Removed "Current Level: ${gameLevel}"
+    updateGameStatusMessage(); // Update status message immediately
+
+    // Restart the increase interval with the new rate
+    clearInterval(increaseInterval);
+    increaseInterval = setInterval(increaseProgressBars, INCREASE_INTERVAL_MS);
+  }
+
+  // Function to check Game Over condition
+  function checkGameOver() {
+    if (scalingValue >= 100 || defendValue >= 100 || monitoringValue >= 100) {
+      clearInterval(increaseInterval);
+      clearInterval(levelUpInterval);
+      disableAllButtons();
+      actionButtonsContainer.classList.add('hidden'); // Hide action buttons
+      shareResultContainer.classList.remove('hidden'); // Show share and download buttons
+
+      finalSurvivalTimeSeconds = Math.floor((Date.now() - gameStartTime) / 1000); // Store final time
+      gameStatus.textContent = `GAME OVER! You survived ${finalSurvivalTimeSeconds} seconds. One or more metrics reached 100%.`;
+    }
+  }
+
+  // Function to disable all buttons
+  function disableAllButtons() {
+    const buttons = actionButtonsContainer.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.disabled = true;
+    });
+  }
+
+  // Function to enable all buttons
+  function enableAllButtons() {
+    const buttons = actionButtonsContainer.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.disabled = false;
+    });
+  }
+
+  // Add listeners for buttons
+  scalingBtn.addEventListener('click', () => {
+    scalingValue = Math.max(0, scalingValue - 15); // Decrease by 15%
+    updateProgressBar(scalingProgressBar, scalingValue);
+    disableAllButtons();
+    setTimeout(enableAllButtons, BUTTON_COOLDOWN_MS);
+  });
+
+  defendBtn.addEventListener('click', () => {
+    defendValue = Math.max(0, defendValue - 15); // Decrease by 15%
+    updateProgressBar(defendProgressBar, defendValue);
+    disableAllButtons();
+    setTimeout(enableAllButtons, BUTTON_COOLDOWN_MS);
+  });
+
+  monitoringBtn.addEventListener('click', () => {
+    monitoringValue = Math.max(0, monitoringValue - 15); // Decrease by 15%
+    updateProgressBar(monitoringProgressBar, monitoringValue);
+    disableAllButtons();
+    setTimeout(enableAllButtons, BUTTON_COOLDOWN_MS);
+  });
+
+  // Share Result on X (Twitter)
+  shareResultBtn.addEventListener('click', () => {
+      let tweetText = SHARE_TWEET_BASE_TEXT;
+      tweetText = tweetText.replace('{LEVEL}', gameLevel);
+      // Removed scaling, defend, monitoring percentages from tweet text as requested
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+      window.open(twitterUrl, '_blank');
+  });
+
+  // Download Result (PNG)
+  downloadResultBtn.addEventListener('click', () => {
+      // Temporarily store original texts
+      const originalTitleText = document.getElementById('gameModalLabel').textContent;
+      const originalGameStatusText = gameStatus.textContent;
+
+      // Change texts for screenshot
+      document.getElementById('gameModalLabel').textContent = 'Kubernetes Survivor'; // Title as requested
+      // Use the stored finalSurvivalTimeSeconds for the screenshot text
+      gameStatus.textContent = `GAME OVER! You survived ${finalSurvivalTimeSeconds} seconds. One or more metrics reached 100%.`; // Footer as requested
+
+      // Capture the modal content (the inner part of the modal)
+      const modalContent = gameModalElement.querySelector('.modal-content');
+      html2canvas(modalContent, {
+          backgroundColor: '#282c34', // Explicitly set background color for capture
+          scale: 2, // Increase scale for better resolution
+          useCORS: true // Important if any images/resources are from external domains
+      }).then(canvas => {
+          // Revert texts immediately after capture
+          document.getElementById('gameModalLabel').textContent = originalTitleText;
+          gameStatus.textContent = originalGameStatusText;
+
+          // Create a temporary link element
+          const link = document.createElement('a');
+          link.download = 'kubernetes_survivor_result.png';
+          link.href = canvas.toDataURL('image/png');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+      }).catch(err => {
+          console.error("Error capturing modal for download:", err);
+          gameStatus.textContent = "Error capturing result for download.";
+          // Ensure texts are reverted even on error
+          document.getElementById('gameModalLabel').textContent = originalTitleText;
+          gameStatus.textContent = originalGameStatusText;
+      });
+  });
+
+  // =====================================================================
+  // Initialization Sequence
+  // =====================================================================
+
+  // 1. Start the animated terminal
+  createTypingLine();
+  setTimeout(typeTerminalCommand, 1000);
+
+  // 2. Show "Get Ready..." animation
+  setTimeout(() => {
+    getReadyAnimation.style.opacity = 1; // Make visible
+  }, 500); // Small delay to appear
+
+  // 3. Hide "Get Ready..." and show game modal after 10 seconds
+  setTimeout(() => {
+    getReadyAnimation.style.opacity = 0; // Start fade-out
+    const gameModal = new bootstrap.Modal(gameModalElement, {
+      backdrop: 'static', // Prevents closing by clicking outside
+      keyboard: false     // Prevents closing with ESC key
+    });
+    gameModal.show();
+
+    gameStartTime = Date.now(); // Set the game start time when the modal appears
+
+    // Start progress bar increase and level up intervals
+    increaseInterval = setInterval(increaseProgressBars, INCREASE_INTERVAL_MS);
+    levelUpInterval = setInterval(levelUp, LEVEL_UP_INTERVAL_MS);
+
+    // Initial update of progress bars
+    updateProgressBar(scalingProgressBar, scalingValue);
+    updateProgressBar(defendProgressBar, defendValue);
+    updateProgressBar(monitoringProgressBar, monitoringValue);
+
+  }, 10000); // 10 seconds for "Get Ready..."
+</script>
+
+</body>
 </html>
