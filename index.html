@@ -74,18 +74,19 @@
   /* Game Styles */
   #get-ready-animation {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 250px; /* Fixed width for the box */
-    font-size: 2em; /* Slightly smaller */
+    bottom: 20px; /* Move para a parte inferior da tela */
+    right: 20px; /* Move para o canto direito da tela */
+    width: 250px; /* Largura do box */
+    font-size: 2em;
     font-weight: bold;
-    color: #e6c07b; /* Yellow/gold color */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* Adicionando sombra preta */
-    opacity: 0; /* Starts invisible */
-    transition: opacity 1s ease-in-out; /* Smooth fade transition */
-    z-index: 1000; /* Above terminal */
-    text-align: left; /* Align text to the left */
-    /* No border for the box */
+    color: #e6c07b;
+    text-shadow: 3px 3px 8px rgba(0, 0, 0, 1); /* Sombra preta sólida com raio de desfoque maior */
+    opacity: 0; /* Starts invisível */
+    transition: opacity 1s ease-in-out; /* Transição suave para o fade */
+    z-index: 1000; /* Acima do terminal */
+    text-align: left; /* Alinha o texto à esquerda dentro do box */
+    padding: 5px; /* Pequeno padding */
+    /* No border para o box */
   }
 
   #loading-dots {
