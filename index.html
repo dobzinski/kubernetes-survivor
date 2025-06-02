@@ -3,6 +3,7 @@
 <head>
 <title>Kubernetes Survivor</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta name="author" content="Gemini AI and Robson Dobzinski">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   body {
@@ -75,11 +76,11 @@
     position: fixed;
     top: 20px;
     right: 20px;
-    width: 250px; /* Changed from 200px to 250px */
+    width: 250px; /* Fixed width for the box */
     font-size: 2em; /* Slightly smaller */
     font-weight: bold;
     color: #e6c07b; /* Yellow/gold color */
-    text-shadow: 0 0 10px rgba(230, 192, 123, 0.7);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* Adicionando sombra preta */
     opacity: 0; /* Starts invisible */
     transition: opacity 1s ease-in-out; /* Smooth fade transition */
     z-index: 1000; /* Above terminal */
@@ -537,7 +538,7 @@
       shareResultContainer.classList.remove('hidden'); // Show share and download buttons
 
       finalSurvivalTimeSeconds = Math.floor((Date.now() - gameStartTime) / 1000); // Store final time
-      gameStatus.textContent = `GAME OVER! You survived ${finalSurvivalTimeSeconds} seconds.`;
+      gameStatus.textContent = `GAME OVER! I survived for ${finalSurvivalTimeSeconds} seconds.`;
     }
   }
 
