@@ -211,7 +211,7 @@
 
         <div class="d-grid gap-2 hidden" id="share-result-container">
             <button type="button" class="btn btn-game" id="downloadResultBtn">Download Result (PNG)</button>
-            <button type="button" class="btn btn-game" id="shareResultBtn">Share Result on X</button>
+            <button type="button" class="btn btn-game" id="shareResultBtn">Share Result on X (Twitter)</button>
         </div>
       </div>
       <div class="modal-footer">
@@ -227,7 +227,7 @@
   // =====================================================================
   // Global Configuration Variables
   // =====================================================================
-  const SHARE_TWEET_BASE_TEXT = "I survived {LEVEL} levels in Kubernetes Survivor! Can you beat my score?\n#KubernetesSurvivor #SUSE";
+  const SHARE_TWEET_BASE_TEXT = "I survived {LEVEL} levels in Kubernetes Survivor! Can you beat my score?\n#KubernetesSurvivor";
 
   // =====================================================================
   // Animated Terminal Logic
@@ -537,7 +537,7 @@
       shareResultContainer.classList.remove('hidden'); // Show share and download buttons
 
       finalSurvivalTimeSeconds = Math.floor((Date.now() - gameStartTime) / 1000); // Store final time
-      gameStatus.textContent = `GAME OVER! You survived ${finalSurvivalTimeSeconds} seconds. One or more metrics reached 100%.`;
+      gameStatus.textContent = `GAME OVER! You survived ${finalSurvivalTimeSeconds} seconds.`;
     }
   }
 
