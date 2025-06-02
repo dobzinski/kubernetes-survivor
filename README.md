@@ -1,4 +1,4 @@
-# kubernetes-survivor
+# Kubernetes Survivor
 
 This game was created using Gemini AI.
 
