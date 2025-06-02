@@ -622,6 +622,7 @@
       gameStatus.textContent = `GAME OVER! I survived for ${finalSurvivalTimeSeconds} seconds.`; // Footer as requested
       downloadButton.style.display = 'none'; // Hide download button
       shareButton.style.display = 'none'; // Hide share button
+      aboutButton.style.display = 'none'; // hide about button
 
       // Capture the modal content (the inner part of the modal)
       const modalContent = gameModalElement.querySelector('.modal-content');
@@ -652,6 +653,7 @@
           gameStatus.textContent = originalGameStatusText;
           downloadButton.style.display = originalDownloadDisplay; // Restore download button
           shareButton.style.display = originalShareDisplay; // Restore share button
+          aboutButton.style.display = originalAboutDisplay; // Restore about button
       });
   });
 
