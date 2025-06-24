@@ -2,7 +2,8 @@
 <html>
 <head>
 <title>Kubernetes Survivor</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta name="viewport" content="width=device-device, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <meta name="author" content="Gemini AI and Robson Dobzinski">
 <meta name="repository" content="https://github.com/dobzinski/kubernetes-survivor">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -75,19 +76,19 @@
   /* Game Styles */
   #get-ready-animation {
     position: fixed;
-    bottom: 20px; /* Move para a parte inferior da tela */
-    right: 20px; /* Move para o canto direito da tela */
-    width: 250px; /* Largura do box */
+    bottom: 20px; /* Moves to the bottom of the screen */
+    right: 20px; /* Moves to the right corner of the screen */
+    width: 250px; /* Fixed width for the box */
     font-size: 2em;
     font-weight: bold;
     color: #e6c07b;
-    text-shadow: 3px 3px 8px rgba(0, 0, 0, 1); /* Sombra preta sólida com raio de desfoque maior */
-    opacity: 0; /* Starts invisível */
-    transition: opacity 1s ease-in-out; /* Transição suave para o fade */
-    z-index: 1000; /* Acima do terminal */
-    text-align: left; /* Alinha o texto à esquerda dentro do box */
-    padding: 5px; /* Pequeno padding */
-    /* No border para o box */
+    text-shadow: 3px 3px 8px rgba(0, 0, 0, 1); /* Solid black shadow with larger blur radius */
+    opacity: 0; /* Starts invisible */
+    transition: opacity 1s ease-in-out; /* Smooth fade transition */
+    z-index: 1000; /* Above terminal */
+    text-align: left; /* Aligns text to the left inside the box */
+    padding: 5px; /* Small padding */
+    /* No border for the box */
   }
 
   #loading-dots {
@@ -212,14 +213,20 @@
         </div>
 
         <div class="d-grid gap-2" id="action-buttons-container">
-          <button type="button" class="btn btn-game" id="scalingBtn">Scale</button>
-          <button type="button" class="btn btn-game" id="defendBtn">Defend</button>
-          <button type="button" class="btn btn-game" id="monitoringBtn">Monitor</button>
+          <button type="button" class="btn btn-game" id="scalingBtn">Scale [Key: S]</button>
+          <button type="button" class="btn btn-game" id="defendBtn">Defend [Key: D]</button>
+          <button type="button" class="btn btn-game" id="monitoringBtn">Monitor [Key: A]</button>
         </div>
 
         <div class="d-grid gap-2 hidden" id="share-result-container">
             <button type="button" class="btn btn-game" id="downloadResultBtn">Download Result (PNG)</button>
             <button type="button" class="btn btn-game btn-share" id="shareResultBtn">Share Result on X (Twitter)</button>
+            <a href="https://github.com/dobzinski/kubernetes-survivor" class="btn btn-game" id="aboutBtn" target="_blank" rel="noopener noreferrer" style="background-color: #c678dd; color: #fff;">
+              <svg height="24" width="24" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.3em;">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.68 7.68 0 012-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+              </svg>
+              About this game
+            </a>
         </div>
       </div>
       <div class="modal-footer">
@@ -263,7 +270,7 @@
     ]},
     { command: 'kubectl create deployment my-new-app --image=nginx', outputs: [`deployment.apps/my-new-app created`, `Error: failed to create deployment: already exists`] },
     { command: 'kubectl expose deployment my-new-app --port=80 --type=LoadBalancer', outputs: [`service/my-new-app exposed`, `Error: service already exists`] },
-    { command: 'kubectl get replicasets', outputs: [
+    { command: 'kubectl kubectl get replicasets', outputs: [
         `NAME   DESIRED   CURRENT   READY   AGE\nmy-app-789d96c597         1         1         1       2m\nnginx-deployment-66b6c48d5   1         1         1       5m`,
         `No replicasets found.`
     ]},
@@ -418,6 +425,9 @@
   const downloadResultBtn = document.getElementById('downloadResultBtn');
   const shareResultBtn = document.getElementById('shareResultBtn');
   const gameStatus = document.getElementById('game-status');
+  const scalingBtn = document.getElementById('scalingBtn');
+  const defendBtn = document.getElementById('defendBtn');
+  const monitoringBtn = document.getElementById('monitoringBtn');
 
   let scalingValue = 0; // Start from 0
   let defendValue = 0;    // Start from 0
@@ -429,11 +439,23 @@
   let levelUpInterval; // For the level up setInterval
   let currentStatusSeverity = 0; // 0: OK, 1: Warning, 2: Danger
   let baseStatusMessage = ""; // Stores the Level Up message
+  let isGameOver = false; // Flag to track game over state
 
-  const BASE_INCREASE_RATE = 0.5; // Base value for increase per tick (changed from 1)
+  // Difficulty Parameters
+  const MIN_RANDOM_INCREASE_RATE = 0.5; // Minimum random increase rate
+  const MAX_RANDOM_INCREASE_RATE = 1.0; // Maximum random increase rate
+  const LEVEL_INCREASE_FACTOR = 0.5; // How much each level adds to the base random increase (more aggressive ramp up)
+
+  const MIN_BUTTON_DECREASE = 10; // Minimum random decrease from button click
+  const MAX_BUTTON_DECREASE = 25; // Maximum random decrease from button click
+  const BUTTON_REDUCTION_FACTOR_PER_LEVEL = 1.5; // How much button effectiveness is reduced per level (already good, keeps decrease less effective)
+  const MIN_EFFECTIVE_BUTTON_DECREASE = 1; // Minimum reduction from a button click
+
   const INCREASE_INTERVAL_MS = 1000; // Base interval for progress bar increase (1 second)
-  const LEVEL_UP_INTERVAL_MS = 20000; // Interval to level up (20 seconds - doubled)
-  const BUTTON_COOLDOWN_MS = 2000; // Button cooldown (2 seconds)
+  const LEVEL_UP_INTERVAL_MS = 20000; // Interval to level up (20 seconds)
+  const INITIAL_BUTTON_COOLDOWN_MS = 2000; // Initial button cooldown (2 seconds)
+  const COOLDOWN_REDUCTION_PER_LEVEL_MS = 200; // How much cooldown is reduced per level (already good, makes buttons faster)
+  const MIN_BUTTON_COOLDOWN_MS = 0; // Minimum cooldown (no cooldown)
 
   // Function to update progress bars
   function updateProgressBar(barElement, value) {
@@ -442,10 +464,10 @@
     barElement.textContent = Math.floor(value) + '%'; // Round down for display
 
     // Color logic: green when low, yellow in middle, red when high
-    if (value >= 85) { // Critical level (changed from 75)
+    if (value >= 85) { // Critical level
         barElement.classList.remove('bg-success', 'bg-warning');
         barElement.classList.add('bg-danger');
-    } else if (value >= 70) { // Warning level (changed from 50)
+    } else if (value >= 70) { // Warning level
         barElement.classList.remove('bg-success', 'bg-danger');
         barElement.classList.add('bg-warning');
     } else { // Good level
@@ -461,10 +483,10 @@
       let newMessage = baseStatusMessage; // Start with the base message (e.g., Level Up)
 
       // Determine the highest severity among all bars
-      if (scalingValue >= 85 || defendValue >= 85 || monitoringValue >= 85) { // Changed from 75
+      if (scalingValue >= 85 || defendValue >= 85 || monitoringValue >= 85) {
           newSeverity = 2; // Danger
           newMessage = "Danger! The cluster is overloaded.";
-      } else if (scalingValue >= 70 || defendValue >= 70 || monitoringValue >= 70) { // Changed from 50
+      } else if (scalingValue >= 70 || defendValue >= 70 || monitoringValue >= 70) {
           newSeverity = 1; // Warning
           newMessage = "Warning! Resources are becoming critical.";
       }
@@ -505,26 +527,17 @@
 
   // Function to increase progress bars
   function increaseProgressBars() {
-    //const currentIncreaseRate = BASE_INCREASE_RATE * gameLevel; // Rate increases with level
-    // Random
-    const scalingRandomIncreaseRate = Math.random() * (0.8 - 0.3) + 0.3;
-    const defendRandomIncreaseRate = Math.random() * (0.8 - 0.3) + 0.3;
-    const monitoringRandomIncreaseRate = Math.random() * (0.8 - 0.3) + 0.3;
-    const scalingCurrentIncrease = scalingRandomIncreaseRate * gameLevel;
-    const defendCurrentIncrease = defendRandomIncreaseRate * gameLevel;
-    const monitoringCurrentIncrease = monitoringRandomIncreaseRate * gameLevel;
+    // New logic: Random value + (level_factor * gameLevel)
+    // Make increase rate per level more significant
+    const dynamicLevelIncreaseFactor = LEVEL_INCREASE_FACTOR * gameLevel;
 
-    //scalingValue += currentIncreaseRate;
-    scalingValue = Math.min(100, scalingValue + scalingCurrentIncrease); // Random
-    //defendValue += currentIncreaseRate;
-    defendValue = Math.min(100, defendValue + defendCurrentIncrease); // Random
-    //monitoringValue += currentIncreaseRate;
-    monitoringValue = Math.min(100, monitoringValue + monitoringCurrentIncrease); // Random
+    const scalingIncrease = (Math.random() * (MAX_RANDOM_INCREASE_RATE - MIN_RANDOM_INCREASE_RATE) + MIN_RANDOM_INCREASE_RATE) + dynamicLevelIncreaseFactor;
+    const defendIncrease = (Math.random() * (MAX_RANDOM_INCREASE_RATE - MIN_RANDOM_INCREASE_RATE) + MIN_RANDOM_INCREASE_RATE) + dynamicLevelIncreaseFactor;
+    const monitoringIncrease = (Math.random() * (MAX_RANDOM_INCREASE_RATE - MIN_RANDOM_INCREASE_RATE) + MIN_RANDOM_INCREASE_RATE) + dynamicLevelIncreaseFactor;
 
-    // Ensure values don't go above 100
-    //scalingValue = Math.min(100, scalingValue);
-    //defendValue = Math.min(100, defendValue);
-    //monitoringValue = Math.min(100, monitoringValue);
+    scalingValue = Math.min(100, scalingValue + scalingIncrease);
+    defendValue = Math.min(100, defendValue + defendIncrease);
+    monitoringValue = Math.min(100, monitoringValue + monitoringIncrease);
 
     updateProgressBar(scalingProgressBar, scalingValue);
     updateProgressBar(defendProgressBar, defendValue);
@@ -550,13 +563,22 @@
     if (scalingValue >= 100 || defendValue >= 100 || monitoringValue >= 100) {
       clearInterval(increaseInterval);
       clearInterval(levelUpInterval);
+      isGameOver = true; // Set game over flag to true
       disableAllButtons();
       actionButtonsContainer.classList.add('hidden'); // Hide action buttons
       shareResultContainer.classList.remove('hidden'); // Show share and download buttons
 
       finalSurvivalTimeSeconds = Math.floor((Date.now() - gameStartTime) / 1000); // Store final time
-      gameStatus.textContent = `GAME OVER! I survived for ${finalSurvivalTimeSeconds} seconds.`;
+      gameStatus.textContent = `GAME OVER! You survived ${finalSurvivalTimeSeconds} seconds. One or more metrics reached 100%.`;
     }
+  }
+
+  // Function to get the current button cooldown
+  function getCurrentButtonCooldown() {
+      // Cooldown decreases by COOLDOWN_REDUCTION_PER_LEVEL_MS for each level
+      let calculatedCooldown = INITIAL_BUTTON_COOLDOWN_MS - (COOLDOWN_REDUCTION_PER_LEVEL_MS * (gameLevel - 1));
+      // Ensure cooldown does not go below MIN_BUTTON_COOLDOWN_MS
+      return Math.max(MIN_BUTTON_COOLDOWN_MS, calculatedCooldown);
   }
 
   // Function to disable all buttons
@@ -577,27 +599,39 @@
 
   // Add listeners for buttons
   scalingBtn.addEventListener('click', () => {
-    //scalingValue = Math.max(0, scalingValue - 15); // Decrease by 15%
-    scalingValue = Math.max(0, scalingValue - (Math.floor(Math.random() * 6) + 13)); // Random
+    // Calculate random decrease amount (10 to 25)
+    let randomDecrease = Math.floor(Math.random() * (MAX_BUTTON_DECREASE - MIN_BUTTON_DECREASE + 1)) + MIN_BUTTON_DECREASE;
+    // Reduce effectiveness with level, ensuring a minimum decrease
+    let effectiveDecrease = Math.max(MIN_EFFECTIVE_BUTTON_DECREASE, randomDecrease - (BUTTON_REDUCTION_FACTOR_PER_LEVEL * (gameLevel - 1)));
+
+    scalingValue = Math.max(0, scalingValue - effectiveDecrease);
     updateProgressBar(scalingProgressBar, scalingValue);
     disableAllButtons();
-    setTimeout(enableAllButtons, BUTTON_COOLDOWN_MS);
+    setTimeout(enableAllButtons, getCurrentButtonCooldown()); // Use dynamic cooldown
   });
 
   defendBtn.addEventListener('click', () => {
-    //defendValue = Math.max(0, defendValue - 15); // Decrease by 15%
-    defendValue = Math.max(0, defendValue - (Math.floor(Math.random() * 6) + 13)); // Random
+    // Calculate random decrease amount (10 to 25)
+    let randomDecrease = Math.floor(Math.random() * (MAX_BUTTON_DECREASE - MIN_BUTTON_DECREASE + 1)) + MIN_BUTTON_DECREASE;
+    // Reduce effectiveness with level, ensuring a minimum decrease
+    let effectiveDecrease = Math.max(MIN_EFFECTIVE_BUTTON_DECREASE, randomDecrease - (BUTTON_REDUCTION_FACTOR_PER_LEVEL * (gameLevel - 1)));
+
+    defendValue = Math.max(0, defendValue - effectiveDecrease);
     updateProgressBar(defendProgressBar, defendValue);
     disableAllButtons();
-    setTimeout(enableAllButtons, BUTTON_COOLDOWN_MS);
+    setTimeout(enableAllButtons, getCurrentButtonCooldown()); // Use dynamic cooldown
   });
 
   monitoringBtn.addEventListener('click', () => {
-    //monitoringValue = Math.max(0, monitoringValue - 15); // Decrease by 15%
-    monitoringValue = Math.max(0, monitoringValue - (Math.floor(Math.random() * 6) + 13)); // Random
+    // Calculate random decrease amount (10 to 25)
+    let randomDecrease = Math.floor(Math.random() * (MAX_BUTTON_DECREASE - MIN_BUTTON_DECREASE + 1)) + MIN_BUTTON_DECREASE;
+    // Reduce effectiveness with level, ensuring a minimum decrease
+    let effectiveDecrease = Math.max(MIN_EFFECTIVE_BUTTON_DECREASE, randomDecrease - (BUTTON_REDUCTION_FACTOR_PER_LEVEL * (gameLevel - 1)));
+
+    monitoringValue = Math.max(0, monitoringValue - effectiveDecrease);
     updateProgressBar(monitoringProgressBar, monitoringValue);
     disableAllButtons();
-    setTimeout(enableAllButtons, BUTTON_COOLDOWN_MS);
+    setTimeout(enableAllButtons, getCurrentButtonCooldown()); // Use dynamic cooldown
   });
 
   // Share Result on X (Twitter)
@@ -611,19 +645,22 @@
 
   // Download Result (PNG)
   downloadResultBtn.addEventListener('click', () => {
-      // Temporarily store original texts and visibility
+      // Temporarily store original texts
       const originalTitleText = document.getElementById('gameModalLabel').textContent;
       const originalGameStatusText = gameStatus.textContent;
       const downloadButton = document.getElementById('downloadResultBtn');
       const shareButton = document.getElementById('shareResultBtn');
+      const aboutButton = document.getElementById('aboutBtn'); // Get reference to about button
       const originalDownloadDisplay = downloadButton.style.display;
       const originalShareDisplay = shareButton.style.display;
+      const originalAboutDisplay = aboutButton.style.display; // Store original display for about button
 
       // Change texts and hide buttons for screenshot
       document.getElementById('gameModalLabel').textContent = 'Kubernetes Survivor'; // Title as requested
-      gameStatus.textContent = `GAME OVER! I survived for ${finalSurvivalTimeSeconds} seconds.`; // Footer as requested
+      gameStatus.textContent = `GAME OVER! You survived ${finalSurvivalTimeSeconds} seconds. One or more metrics reached 100%.`; // Footer as requested
       downloadButton.style.display = 'none'; // Hide download button
       shareButton.style.display = 'none'; // Hide share button
+      aboutButton.style.display = 'none'; // Hide about button
 
       // Capture the modal content (the inner part of the modal)
       const modalContent = gameModalElement.querySelector('.modal-content');
@@ -637,6 +674,7 @@
           gameStatus.textContent = originalGameStatusText;
           downloadButton.style.display = originalDownloadDisplay; // Restore download button
           shareButton.style.display = originalShareDisplay; // Restore share button
+          aboutButton.style.display = originalAboutDisplay; // Restore about button
 
           // Create a temporary link element
           const link = document.createElement('a');
@@ -653,6 +691,7 @@
           gameStatus.textContent = originalGameStatusText;
           downloadButton.style.display = originalDownloadDisplay; // Restore download button
           shareButton.style.display = originalShareDisplay; // Restore share button
+          aboutButton.style.display = originalAboutDisplay; // Restore about button
       });
   });
 
@@ -690,6 +729,22 @@
     updateProgressBar(monitoringProgressBar, monitoringValue);
 
   }, 10000); // 10 seconds for "Get Ready..."
+
+  // Keyboard listener
+  document.body.addEventListener('keydown', (event) => {
+    // Game Over control
+    if (gameModalElement.classList.contains('show') && !isGameOver) {
+      const key = event.key.toLowerCase();
+      if (key === 's' && !scalingBtn.disabled) {
+        scalingBtn.click();
+      } else if (key === 'd' && !defendBtn.disabled) {
+        defendBtn.click();
+      } else if (key === 'a' && !monitoringBtn.disabled) {
+        monitoringBtn.click();
+      }
+    }
+  });
+
 </script>
 
 </body>
